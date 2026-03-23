@@ -1,3 +1,88 @@
+/* --- Modal Video Player Styles --- */
+.player-modal {
+  position: fixed;
+  inset-block-start: 0; inset-inline-start: 0; inset-inline-end: 0; inset-block-end: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  animation: fadeIn 0.2s;
+}
+.player-modal-bg {
+  position: absolute;
+  inset-block-start: 0; inset-inline-start: 0; inset-inline-end: 0; inset-block-end: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 0;
+}
+.player-modal-content {
+  position: relative;
+  background: #23263a;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  min-inline-size: 340px;
+  max-inline-size: 600px;
+  inline-size: 95vw;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.player-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 1rem;
+  gap: 1rem;
+}
+.player-modal-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+}
+.player-episode-select {
+  background: #181a20;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  font-size: 1rem;
+  outline: none;
+}
+.player-modal-close {
+  position: absolute;
+  inset-block-start: 0.7rem;
+  inset-inline-end: 1.1rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.18s;
+}
+.player-modal-close:hover {
+  color: #ff5e62;
+}
+.player-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.player-video {
+  inline-size: 100%;
+  max-block-size: 60vh;
+  background: #000;
+  border-radius: 8px;
+  margin-block-end: 0.5rem;
+}
+.player-modal-error {
+  color: #ff5e62;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-block-start: 1rem;
+}
 /* Modern Anime Streaming UI Revamp */
 html, body {
   margin: 0;
@@ -5,7 +90,7 @@ html, body {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: #181a20;
   color: #f3f3f3;
-  min-height: 100%;
+  min-block-size: 100%;
 }
 
 .main-header {
@@ -13,14 +98,14 @@ html, body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   padding: 0;
   position: sticky;
-  top: 0;
+  inset-block-start: 0;
   z-index: 1000;
 }
 .nav-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
+  max-inline-size: 1200px;
   margin: 0 auto;
   padding: 0.5rem 2rem;
 }
@@ -65,15 +150,15 @@ html, body {
 }
 .arrow {
   font-size: 0.8em;
-  margin-left: 0.2em;
+  margin-inline-start: 0.2em;
 }
 .dropdown-menu {
   display: none;
   position: absolute;
-  left: 0;
-  top: 110%;
+  inset-inline-start: 0;
+  inset-block-start: 110%;
   background: #23263a;
-  min-width: 180px;
+  min-inline-size: 180px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);
   border-radius: 8px;
   z-index: 100;
@@ -81,6 +166,44 @@ html, body {
   animation: fadeIn 0.2s;
 }
 .dropdown:hover .dropdown-menu,
+
+  /* Horizontal scroll for special sections */
+  .seasonal-grid,
+  .top-airing-grid,
+  .top-movies-grid,
+  .top-ongoing-grid {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 0.5rem;
+    padding-block-end: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #ff5e62 #232526;
+  }
+  .seasonal-grid::-webkit-scrollbar,
+  .top-airing-grid::-webkit-scrollbar,
+  .top-movies-grid::-webkit-scrollbar,
+  .top-ongoing-grid::-webkit-scrollbar {
+    block-size: 8px;
+    background: #232526;
+  }
+  .seasonal-grid::-webkit-scrollbar-thumb,
+  .top-airing-grid::-webkit-scrollbar-thumb,
+  .top-movies-grid::-webkit-scrollbar-thumb,
+  .top-ongoing-grid::-webkit-scrollbar-thumb {
+    background: #ff5e62;
+    border-radius: 4px;
+  }
+  .seasonal-grid .anime-card,
+  .top-airing-grid .anime-card,
+  .top-movies-grid .anime-card,
+  .top-ongoing-grid .anime-card {
+    display: inline-block;
+    min-inline-size: 200px;
+    max-inline-size: 200px;
+    margin-inline-end: 1rem;
+    vertical-align: top;
+  }
 .dropdown-menu:hover {
   display: block;
 }
@@ -108,7 +231,7 @@ html, body {
   background: #23263a;
   border-radius: 8px;
   padding: 0.2rem 0.4rem;
-  margin-left: 1.2rem;
+  margin-inline-start: 1.2rem;
 }
 .search-bar input {
   padding: 0.5rem 1rem;
@@ -138,7 +261,7 @@ html, body {
   transform: translateY(-2px) scale(1.04);
 }
 .hero {
-  min-height: 340px;
+  min-block-size: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -146,7 +269,7 @@ html, body {
   background-size: 200% 200%;
   animation: heroGradientMove 8s ease-in-out infinite;
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-block-end: 2.5rem;
 }
 @keyframes heroGradientMove {
   0% { background-position: 0% 50%; }
@@ -154,12 +277,12 @@ html, body {
   100% { background-position: 0% 50%; }
 }
 .hero-content {
-  max-width: 600px;
+  max-inline-size: 600px;
   margin: 0 auto;
 }
 .hero h1 {
   font-size: 2.7rem;
-  margin-bottom: 0.7rem;
+  margin-block-end: 0.7rem;
   font-weight: 700;
 }
 .hero .accent {
@@ -167,7 +290,7 @@ html, body {
 }
 .hero p {
   font-size: 1.2rem;
-  margin-bottom: 1.5rem;
+  margin-block-end: 1.5rem;
 }
 .cta {
   background: linear-gradient(90deg, #ff5e62 60%, #ff9966 100%);
@@ -187,12 +310,12 @@ html, body {
   transform: translateY(-2px) scale(1.04);
 }
 .section {
-  max-width: 1200px;
+  max-inline-size: 1200px;
   margin: 2.5rem auto 0 auto;
   padding: 0 1.5rem;
 }
 .section-header {
-  margin-bottom: 1.2rem;
+  margin-block-end: 1.2rem;
 }
 .section-header h2 {
   color: #ff5e62;
@@ -205,17 +328,17 @@ html, body {
   gap: 2rem;
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin-bottom: 1.5rem;
+  margin-block-end: 1.5rem;
 }
 .anime-card {
   background: #23263a;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-  width: 200px;
+  inline-size: 200px;
   text-align: center;
   transition: transform 0.18s, box-shadow 0.18s;
-  margin-bottom: 1.2rem;
+  margin-block-end: 1.2rem;
   display: flex;
   flex-direction: column;
 }
@@ -224,8 +347,8 @@ html, body {
   box-shadow: 0 8px 32px rgba(255,94,98,0.13);
 }
 .anime-card img {
-  width: 100%;
-  height: 300px;
+  inline-size: 100%;
+  block-size: 300px;
   object-fit: cover;
   border-radius: 12px 12px 0 0;
 }
@@ -235,34 +358,34 @@ html, body {
   color: #fff;
   font-weight: 500;
   background: #23263a;
-  border-top: 1px solid #23263a;
+  border-block-start: 1px solid #23263a;
   flex: 1 1 auto;
 }
 .main-footer {
   background: #23263a;
   text-align: center;
   padding: 1.2rem 0;
-  margin-top: 2rem;
+  margin-block-start: 2rem;
   color: #aaa;
 }
 .footer-content {
-  max-width: 1200px;
+  max-inline-size: 1200px;
   margin: 0 auto;
   font-size: 1rem;
 }
 @media (max-width: 900px) {
   .nav-container, .section {
-    max-width: 100vw;
+    max-inline-size: 100vw;
     padding: 0 1rem;
   }
   .anime-grid {
     gap: 1rem;
   }
   .anime-card {
-    width: 140px;
+    inline-size: 140px;
   }
   .anime-card img {
-    height: 180px;
+    block-size: 180px;
   }
   .hero h1 {
     font-size: 2rem;
@@ -283,8 +406,8 @@ html, body {
     justify-content: center;
   }
   .search-bar {
-    margin-left: 0;
-    width: 100%;
+    margin-inline-start: 0;
+    inline-size: 100%;
     justify-content: center;
   }
   .section {

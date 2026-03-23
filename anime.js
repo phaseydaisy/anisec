@@ -3,11 +3,16 @@
 
 
 
+
 // Section grids
 const trendingGrid = document.querySelector('.trending-grid');
 const continueGrid = document.querySelector('.continue-grid');
 const recentGrid = document.querySelector('.recent-grid');
 const featuredGrid = document.querySelector('.main-grid');
+const seasonalGrid = document.querySelector('.seasonal-grid');
+const topAiringGrid = document.querySelector('.top-airing-grid');
+const topMoviesGrid = document.querySelector('.top-movies-grid');
+const topOngoingGrid = document.querySelector('.top-ongoing-grid');
 
 const searchInput = document.querySelector('.search-bar input');
 const searchButton = document.querySelector('.search-bar button');
@@ -15,27 +20,173 @@ const genreDropdown = document.querySelector('.dropdown-menu');
 const genreLinks = document.querySelectorAll('.dropdown-item');
 const homeBtn = document.querySelector('a[href="#home"]');
 
+
 function getAnimeCard(anime) {
-  return `<div class="anime-card">
-    <a href="${anime.url}" target="_blank" rel="noopener">
-      <img src="${anime.images.jpg.image_url}" alt="${anime.title}" style="width:100%;height:300px;object-fit:cover;border-radius:8px 8px 0 0;">
-    </a>
+  // Add data attributes for id and title for modal
+  return `<div class="anime-card" data-anime-title="${encodeURIComponent(anime.title)}" data-anime-id="${anime.mal_id}" data-anime-image="${anime.images.jpg.image_url}">
+    <img src="${anime.images.jpg.image_url}" alt="${anime.title}" style="inline-size:100%;block-size:300px;object-fit:cover;border-radius:8px 8px 0 0;">
     <div class="anime-title">${anime.title}</div>
   </div>`;
+}
+
+// --- Modal Player Logic ---
+const playerModal = document.getElementById('player-modal');
+const playerModalClose = playerModal?.querySelector('.player-modal-close');
+const playerModalTitle = playerModal?.querySelector('.player-modal-title');
+const playerEpisodeSelect = playerModal?.querySelector('.player-episode-select');
+const playerVideo = playerModal?.querySelector('.player-video');
+const playerSource = playerVideo?.querySelector('source');
+const playerError = playerModal?.querySelector('.player-modal-error');
+let currentAnime = null;
+let currentEpisodes = [];
+let currentProvider = null;
+
+function openPlayerModal(anime) {
+  playerModalTitle.textContent = anime.title;
+  playerError.style.display = 'none';
+  playerEpisodeSelect.innerHTML = '<option>Loading...</option>';
+  playerVideo.style.display = 'none';
+  playerVideo.pause();
+  playerSource.src = '';
+  playerVideo.load();
+  playerModal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  // Try all providers in order
+  fetchEpisodesWithFallback(anime.title)
+}
+
+function closePlayerModal() {
+  playerModal.style.display = 'none';
+  document.body.style.overflow = '';
+  playerVideo.pause();
+  playerSource.src = '';
+  playerVideo.load();
+}
+
+if (playerModalClose) playerModalClose.onclick = closePlayerModal;
+if (playerModal) playerModal.onclick = e => { if (e.target === playerModal) closePlayerModal(); };
+
+// --- Fallback logic for episode/stream fetching ---
+async function fetchEpisodesWithFallback(title) {
+  // Try Gogoanime, then Zoro, then Enime
+  let result = null;
+  let provider = null;
+  try {
+    result = await fetchGogoanimeEpisodes(title);
+    provider = 'gogoanime';
+    if (!result || !result.episodes?.length) throw new Error('No Gogoanime');
+  } catch {
+    try {
+      result = await fetchZoroEpisodes(title);
+      provider = 'zoro';
+      if (!result || !result.episodes?.length) throw new Error('No Zoro');
+    } catch {
+      try {
+        result = await fetchEnimeEpisodes(title);
+        provider = 'enime';
+        if (!result || !result.episodes?.length) throw new Error('No Enime');
+      } catch {
+        playerEpisodeSelect.innerHTML = '<option>No episodes found</option>';
+        playerError.textContent = 'No streaming sources found for this anime.';
+        playerError.style.display = 'block';
+        return;
+      }
+    }
+  }
+  currentEpisodes = result.episodes;
+  currentProvider = provider;
+  playerEpisodeSelect.innerHTML = '';
+  for (let i = 0; i < currentEpisodes.length; i++) {
+    const ep = currentEpisodes[i];
+    playerEpisodeSelect.innerHTML += `<option value="${i}">Episode ${ep.number || i+1}</option>`;
+  }
+  playerEpisodeSelect.onchange = () => playEpisode(playerEpisodeSelect.value);
+  playEpisode(0);
+}
+
+async function playEpisode(idx) {
+  idx = parseInt(idx);
+  const ep = currentEpisodes[idx];
+  playerError.style.display = 'none';
+  playerVideo.style.display = 'none';
+  playerVideo.pause();
+  playerSource.src = '';
+  playerVideo.load();
+  let streamUrl = '';
+  try {
+    if (currentProvider === 'gogoanime') {
+      streamUrl = await fetchGogoanimeStream(ep.id);
+    } else if (currentProvider === 'zoro') {
+      streamUrl = await fetchZoroStream(ep.id);
+    } else if (currentProvider === 'enime') {
+      streamUrl = await fetchEnimeStream(ep.id);
+    }
+    if (!streamUrl) throw new Error('No stream');
+    playerSource.src = streamUrl;
+    playerVideo.load();
+    playerVideo.style.display = 'block';
+    playerVideo.play();
+  } catch {
+    playerError.textContent = 'Failed to load stream for this episode.';
+    playerError.style.display = 'block';
+  }
+}
+
+// --- API Integrations ---
+async function fetchGogoanimeEpisodes(title) {
+  // Search for anime
+  const res = await fetch(`https://api.consumet.org/anime/gogoanime/${encodeURIComponent(title)}`);
+  const data = await res.json();
+  if (!data || !data.episodes) return { episodes: [] };
+  return { episodes: data.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
+}
+async function fetchGogoanimeStream(epId) {
+  const res = await fetch(`https://api.consumet.org/anime/gogoanime/watch/${encodeURIComponent(epId)}`);
+  const data = await res.json();
+  // Prefer best quality, fallback to first
+  return data.sources?.[0]?.url || '';
+}
+async function fetchZoroEpisodes(title) {
+  const res = await fetch(`https://api.consumet.org/anime/zoro/${encodeURIComponent(title)}`);
+  const data = await res.json();
+  if (!data || !data.episodes) return { episodes: [] };
+  return { episodes: data.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
+}
+async function fetchZoroStream(epId) {
+  const res = await fetch(`https://api.consumet.org/anime/zoro/watch?episodeId=${encodeURIComponent(epId)}`);
+  const data = await res.json();
+  return data.sources?.[0]?.url || '';
+}
+async function fetchEnimeEpisodes(title) {
+  // Enime API: search by title, then get episodes
+  const res = await fetch(`https://api.enime.moe/search/${encodeURIComponent(title)}`);
+  const data = await res.json();
+  if (!data || !data.anime?.length) return { episodes: [] };
+  const animeId = data.anime[0].id;
+  const epRes = await fetch(`https://api.enime.moe/anime/${animeId}`);
+  const epData = await epRes.json();
+  if (!epData || !epData.episodes) return { episodes: [] };
+  return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
+}
+async function fetchEnimeStream(epId) {
+  const res = await fetch(`https://api.enime.moe/episode/${encodeURIComponent(epId)}`);
+  const data = await res.json();
+  return data?.sources?.[0]?.url || '';
 }
 
 
 async function loadTrendingAnime() {
   trendingGrid.innerHTML = '<div>Loading trending anime...</div>';
   try {
-    // Use popularity for trending (not just airing)
-    const res = await fetch('https://api.jikan.moe/v4/top/anime?order_by=popularity&limit=8');
+    // Use Jikan's bypopularity for trending
+    const res = await fetch('https://api.jikan.moe/v4/top/anime?filter=bypopularity&limit=16');
     const data = await res.json();
     trendingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
     trendingGrid.innerHTML = '<div>Failed to load trending anime.</div>';
   }
 }
+
 // Home button scrolls to top and resets all sections
 if (homeBtn) {
   homeBtn.addEventListener('click', e => {
@@ -48,13 +199,15 @@ if (homeBtn) {
     loadContinueWatching();
     // Clear search input
     if (searchInput) searchInput.value = '';
+    closePlayerModal();
   });
 }
 
 async function loadRecentAnime() {
   recentGrid.innerHTML = '<div>Loading recently added anime...</div>';
   try {
-    const res = await fetch('https://api.jikan.moe/v4/seasons/now?limit=8');
+    // Use current season, sort by start_date for recency
+    const res = await fetch('https://api.jikan.moe/v4/seasons/now?sort=start_date&order=desc&limit=16');
     const data = await res.json();
     recentGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
@@ -145,7 +298,93 @@ genreLinks.forEach(link => {
   });
 });
 
+
+// --- Card click: open modal player ---
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.anime-card');
+  if (card && card.dataset.animeTitle) {
+    openPlayerModal({
+      title: decodeURIComponent(card.dataset.animeTitle),
+      id: card.dataset.animeId,
+      image: card.dataset.animeImage
+    });
+  }
+});
+
+
+function addHorizontalScroll(grid) {
+  if (grid) {
+    grid.style.overflowX = 'auto';
+    grid.style.whiteSpace = 'nowrap';
+    Array.from(grid.children).forEach(card => {
+      card.style.display = 'inline-block';
+      card.style.verticalAlign = 'top';
+      card.style.width = '200px';
+      card.style.marginRight = '1rem';
+    });
+  }
+}
+
+async function loadSeasonalAnime() {
+  if (!seasonalGrid) return;
+  seasonalGrid.innerHTML = '<div>Loading...</div>';
+  try {
+    // Popular this season: sort by popularity
+    const res = await fetch('https://api.jikan.moe/v4/seasons/now?sort=popularity&limit=16');
+    const data = await res.json();
+    seasonalGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
+    addHorizontalScroll(seasonalGrid);
+  } catch (e) {
+    seasonalGrid.innerHTML = '<div>Failed to load.</div>';
+  }
+}
+
+async function loadTopAiringAnime() {
+  if (!topAiringGrid) return;
+  topAiringGrid.innerHTML = '<div>Loading...</div>';
+  try {
+    // Top Airing: filter=airing, sort by popularity
+    const res = await fetch('https://api.jikan.moe/v4/top/anime?filter=airing&limit=16');
+    const data = await res.json();
+    topAiringGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
+    addHorizontalScroll(topAiringGrid);
+  } catch (e) {
+    topAiringGrid.innerHTML = '<div>Failed to load.</div>';
+  }
+}
+
+async function loadTopMoviesAnime() {
+  if (!topMoviesGrid) return;
+  topMoviesGrid.innerHTML = '<div>Loading...</div>';
+  try {
+    const res = await fetch('https://api.jikan.moe/v4/top/anime?type=movie&limit=12');
+    const data = await res.json();
+    topMoviesGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
+    addHorizontalScroll(topMoviesGrid);
+  } catch (e) {
+    topMoviesGrid.innerHTML = '<div>Failed to load.</div>';
+  }
+}
+
+async function loadTopOngoingAnime() {
+  if (!topOngoingGrid) return;
+  topOngoingGrid.innerHTML = '<div>Loading...</div>';
+  try {
+    // Ongoing: status=airing, sort by popularity
+    const res = await fetch('https://api.jikan.moe/v4/anime?status=airing&order_by=popularity&limit=16');
+    const data = await res.json();
+    topOngoingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
+    addHorizontalScroll(topOngoingGrid);
+  } catch (e) {
+    topOngoingGrid.innerHTML = '<div>Failed to load.</div>';
+  }
+}
+
 loadTrendingAnime();
 loadRecentAnime();
 loadFeaturedAnime();
 loadContinueWatching();
+loadSeasonalAnime();
+loadTopAiringAnime();
+loadTopMoviesAnime();
+loadTopOngoingAnime();
