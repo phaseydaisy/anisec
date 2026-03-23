@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AnimeStreamX</title>
+  <title>AniSec</title>
   <link rel="stylesheet" href="style.css">
   <script defer src="anime.js"></script>
 </head>
@@ -15,7 +15,21 @@
         <a href="#home">Home</a>
         <a href="#trending">Trending</a>
         <a href="#continue">Continue Watching</a>
-        <a href="#genres">Genres</a>
+        <div class="dropdown">
+          <a href="#genres" class="dropdown-toggle">Genres</a>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-genre="action">Action</a>
+            <a href="#" class="dropdown-item" data-genre="adventure">Adventure</a>
+            <a href="#" class="dropdown-item" data-genre="comedy">Comedy</a>
+            <a href="#" class="dropdown-item" data-genre="drama">Drama</a>
+            <a href="#" class="dropdown-item" data-genre="fantasy">Fantasy</a>
+            <a href="#" class="dropdown-item" data-genre="romance">Romance</a>
+            <a href="#" class="dropdown-item" data-genre="sci-fi">Sci-Fi</a>
+            <a href="#" class="dropdown-item" data-genre="sports">Sports</a>
+            <a href="#" class="dropdown-item" data-genre="slice of life">Slice of Life</a>
+            <a href="#" class="dropdown-item" data-genre="horror">Horror</a>
+          </div>
+        </div>
         <a href="#recent">Recently Added</a>
       </nav>
       <div class="search-bar">
@@ -37,22 +51,6 @@
     <section class="continue-watching" id="continue">
       <h2>Continue Watching</h2>
       <div class="anime-grid continue-grid"></div>
-    </section>
-    <section class="genres" id="genres">
-      <h2>Genres</h2>
-      <div class="genres-list">
-        <button class="genre-btn" data-genre="action">Action</button>
-        <button class="genre-btn" data-genre="adventure">Adventure</button>
-        <button class="genre-btn" data-genre="comedy">Comedy</button>
-        <button class="genre-btn" data-genre="drama">Drama</button>
-        <button class="genre-btn" data-genre="fantasy">Fantasy</button>
-        <button class="genre-btn" data-genre="romance">Romance</button>
-        <button class="genre-btn" data-genre="sci-fi">Sci-Fi</button>
-        <button class="genre-btn" data-genre="sports">Sports</button>
-        <button class="genre-btn" data-genre="slice of life">Slice of Life</button>
-        <button class="genre-btn" data-genre="horror">Horror</button>
-      </div>
-      <div class="anime-grid genre-grid"></div>
     </section>
     <section class="recent" id="recent">
       <h2>Recently Added</h2>
