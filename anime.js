@@ -2,6 +2,7 @@
 
 
 
+
 // Section grids
 const trendingGrid = document.querySelector('.trending-grid');
 const continueGrid = document.querySelector('.continue-grid');
@@ -12,6 +13,7 @@ const searchInput = document.querySelector('.search-bar input');
 const searchButton = document.querySelector('.search-bar button');
 const genreDropdown = document.querySelector('.dropdown-menu');
 const genreLinks = document.querySelectorAll('.dropdown-item');
+const homeBtn = document.querySelector('a[href="#home"]');
 
 function getAnimeCard(anime) {
   return `<div class="anime-card">
@@ -26,12 +28,27 @@ function getAnimeCard(anime) {
 async function loadTrendingAnime() {
   trendingGrid.innerHTML = '<div>Loading trending anime...</div>';
   try {
-    const res = await fetch('https://api.jikan.moe/v4/top/anime?filter=airing&limit=8');
+    // Use popularity for trending (not just airing)
+    const res = await fetch('https://api.jikan.moe/v4/top/anime?order_by=popularity&limit=8');
     const data = await res.json();
     trendingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
     trendingGrid.innerHTML = '<div>Failed to load trending anime.</div>';
   }
+}
+// Home button scrolls to top and resets all sections
+if (homeBtn) {
+  homeBtn.addEventListener('click', e => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Reload all main sections
+    loadTrendingAnime();
+    loadRecentAnime();
+    loadFeaturedAnime();
+    loadContinueWatching();
+    // Clear search input
+    if (searchInput) searchInput.value = '';
+  });
 }
 
 async function loadRecentAnime() {
@@ -80,7 +97,6 @@ async function loadGenreAnime(genre) {
 }
 
 function loadContinueWatching() {
-  // Placeholder: In a real app, this would use localStorage or backend
   continueGrid.innerHTML = '<div>Sign in to track your anime and continue watching!</div>';
 }
 
@@ -97,7 +113,6 @@ async function searchAnime() {
     if (data.data.length === 0) {
       trendingGrid.innerHTML = '<div>No results found.</div>';
     } else {
-      // Sort by relevancy: exact title match > startsWith > includes > popularity > score
       const q = query.toLowerCase();
       const sorted = data.data.sort((a, b) => {
         const aTitle = a.title.toLowerCase();
@@ -122,7 +137,6 @@ async function searchAnime() {
 searchButton.addEventListener('click', searchAnime);
 searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchAnime(); });
 
-// Genre dropdown interactivity
 genreLinks.forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
@@ -131,7 +145,6 @@ genreLinks.forEach(link => {
   });
 });
 
-// Initial load
 loadTrendingAnime();
 loadRecentAnime();
 loadFeaturedAnime();
