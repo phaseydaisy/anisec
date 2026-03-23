@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnimeStreamX</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="anime.js"></script>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="logo">anisec</div>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#trending">Trending</a>
+        <a href="#continue">Continue Watching</a>
+        <a href="#genres">Genres</a>
+        <a href="#recent">Recently Added</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="search-bar">
+        <input type="text" placeholder="Search anime...">
+        <button>🔍</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <h1>Welcome to Anisec</h1>
+      <p>Stream your favorite anime in HD, free and always updated!</p>
+      <button class="cta">Browse Anime</button>
+    </section>
+    <section class="trending" id="trending">
+      <h2>Trending Now</h2>
+      <div class="anime-grid trending-grid"></div>
+    </section>
+    <section class="continue-watching" id="continue">
+      <h2>Continue Watching</h2>
+      <div class="anime-grid continue-grid"></div>
+    </section>
+    <section class="genres" id="genres">
+      <h2>Genres</h2>
+      <div class="genres-list">
+        <button class="genre-btn" data-genre="action">Action</button>
+        <button class="genre-btn" data-genre="adventure">Adventure</button>
+        <button class="genre-btn" data-genre="comedy">Comedy</button>
+        <button class="genre-btn" data-genre="drama">Drama</button>
+        <button class="genre-btn" data-genre="fantasy">Fantasy</button>
+        <button class="genre-btn" data-genre="romance">Romance</button>
+        <button class="genre-btn" data-genre="sci-fi">Sci-Fi</button>
+        <button class="genre-btn" data-genre="sports">Sports</button>
+        <button class="genre-btn" data-genre="slice of life">Slice of Life</button>
+        <button class="genre-btn" data-genre="horror">Horror</button>
+      </div>
+      <div class="anime-grid genre-grid"></div>
+    </section>
+    <section class="recent" id="recent">
+      <h2>Recently Added</h2>
+      <div class="anime-grid recent-grid"></div>
+    </section>
+    <section class="featured">
+      <h2>Featured Anime</h2>
+      <div class="anime-grid main-grid"></div>
+    </section>
+
+    <div class="container">
+      <p>&copy; 2026 Anisec. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
