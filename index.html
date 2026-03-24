@@ -117,5 +117,93 @@
       <span>&copy; 2026 Anisec. All rights reserved.</span>
     </div>
   </footer>
+<script>
+// --- DevTools Detection and Blocker ---
+(function() {
+  let devtoolsOpen = false;
+  let blockOverlay = null;
+  function showBlock() {
+    if (!blockOverlay) {
+      blockOverlay = document.createElement('div');
+      blockOverlay.style.position = 'fixed';
+      blockOverlay.style.top = 0;
+      blockOverlay.style.left = 0;
+      blockOverlay.style.width = '100vw';
+      blockOverlay.style.height = '100vh';
+      blockOverlay.style.background = '#fff';
+      blockOverlay.style.zIndex = 999999;
+      blockOverlay.style.display = 'flex';
+      blockOverlay.style.flexDirection = 'column';
+      blockOverlay.style.justifyContent = 'center';
+      blockOverlay.style.alignItems = 'center';
+      blockOverlay.innerHTML = `
+        <h1 style="color:#222;font-size:2.5rem;margin-bottom:1rem;">Error 1015</h1>
+        <h2 style="color:#888;font-size:1.5rem;margin-bottom:2rem;">You are being rate limited</h2>
+        <div style="max-width:500px;text-align:center;color:#444;">
+          <p>The owner of this website has temporarily blocked access because browser developer tools were detected.<br><br>
+          Please close DevTools to continue using the site.</p>
+        </div>
+      `;
+      document.body.appendChild(blockOverlay);
+    }
+    blockOverlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function hideBlock() {
+    if (blockOverlay) blockOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  function detectDevTools() {
+    // Method 1: Detect by measuring window size (DevTools docked)
+    const threshold = 160;
+    if (
+      window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold
+    ) {
+      return true;
+    }
+    // Method 2: Detect by debugger timing
+    let start = performance.now();
+    debugger;
+    return performance.now() - start > 100;
+  }
+  function checkDevTools() {
+    if (detectDevTools()) {
+      if (!devtoolsOpen) {
+        devtoolsOpen = true;
+        showBlock();
+      }
+    } else {
+      if (devtoolsOpen) {
+        devtoolsOpen = false;
+        hideBlock();
+      }
+    }
+  }
+  setInterval(checkDevTools, 500);
+  // Also block on F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+  window.addEventListener('keydown', function(e) {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+      (e.ctrlKey && e.key === 'U')
+    ) {
+      showBlock();
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }, true);
+  // Try to block right-click > Inspect
+  window.addEventListener('contextmenu', function(e) {
+    if (devtoolsOpen) {
+      showBlock();
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }, true);
+})();
+</script>
 </body>
 </html>

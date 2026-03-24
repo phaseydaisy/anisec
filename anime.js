@@ -1,10 +1,3 @@
-
-
-
-
-
-
-// Section grids
 const trendingGrid = document.querySelector('.trending-grid');
 const continueGrid = document.querySelector('.continue-grid');
 const recentGrid = document.querySelector('.recent-grid');
@@ -22,14 +15,12 @@ const homeBtn = document.querySelector('a[href="#home"]');
 
 
 function getAnimeCard(anime) {
-  // Add data attributes for id and title for modal
   return `<div class="anime-card" data-anime-title="${encodeURIComponent(anime.title)}" data-anime-id="${anime.mal_id}" data-anime-image="${anime.images.jpg.image_url}">
     <img src="${anime.images.jpg.image_url}" alt="${anime.title}" style="inline-size:100%;block-size:300px;object-fit:cover;border-radius:8px 8px 0 0;">
     <div class="anime-title">${anime.title}</div>
   </div>`;
 }
 
-// --- Modal Player Logic ---
 const playerModal = document.getElementById('player-modal');
 const playerModalClose = playerModal?.querySelector('.player-modal-close');
 const playerModalTitle = playerModal?.querySelector('.player-modal-title');
@@ -51,7 +42,6 @@ function openPlayerModal(anime) {
   playerVideo.load();
   playerModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  // Try all providers in order
   fetchEpisodesWithFallback(anime.title)
 }
 
@@ -66,9 +56,7 @@ function closePlayerModal() {
 if (playerModalClose) playerModalClose.onclick = closePlayerModal;
 if (playerModal) playerModal.onclick = e => { if (e.target === playerModal) closePlayerModal(); };
 
-// --- Fallback logic for episode/stream fetching ---
 async function fetchEpisodesWithFallback(title) {
-  // Try Gogoanime, then Zoro, then Enime
   let result = null;
   let provider = null;
   try {
@@ -132,9 +120,7 @@ async function playEpisode(idx) {
   }
 }
 
-// --- API Integrations ---
 async function fetchGogoanimeEpisodes(title) {
-  // Search for anime
   const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/gogoanime/${encodeURIComponent(title)}`);
   const data = await res.json();
   if (!data || !data.episodes) return { episodes: [] };
@@ -143,7 +129,6 @@ async function fetchGogoanimeEpisodes(title) {
 async function fetchGogoanimeStream(epId) {
   const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/gogoanime/watch/${encodeURIComponent(epId)}`);
   const data = await res.json();
-  // Prefer best quality, fallback to first
   return data.sources?.[0]?.url || '';
 }
 async function fetchZoroEpisodes(title) {
@@ -158,7 +143,6 @@ async function fetchZoroStream(epId) {
   return data.sources?.[0]?.url || '';
 }
 async function fetchEnimeEpisodes(title) {
-  // Enime API: search by title, then get episodes
   const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/search/${encodeURIComponent(title)}`);
   const data = await res.json();
   if (!data || !data.anime?.length) return { episodes: [] };
@@ -178,7 +162,6 @@ async function fetchEnimeStream(epId) {
 async function loadTrendingAnime() {
   trendingGrid.innerHTML = '<div>Loading trending anime...</div>';
   try {
-    // Use Jikan's bypopularity for trending
     const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/top/anime?filter=bypopularity&limit=16');
     const data = await res.json();
     trendingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
@@ -187,17 +170,14 @@ async function loadTrendingAnime() {
   }
 }
 
-// Home button scrolls to top and resets all sections
 if (homeBtn) {
   homeBtn.addEventListener('click', e => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Reload all main sections
     loadTrendingAnime();
     loadRecentAnime();
     loadFeaturedAnime();
     loadContinueWatching();
-    // Clear search input
     if (searchInput) searchInput.value = '';
     closePlayerModal();
   });
@@ -206,7 +186,6 @@ if (homeBtn) {
 async function loadRecentAnime() {
   recentGrid.innerHTML = '<div>Loading recently added anime...</div>';
   try {
-    // Use current season, sort by start_date for recency
     const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/seasons/now?sort=start_date&order=desc&limit=16');
     const data = await res.json();
     recentGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
@@ -232,7 +211,6 @@ async function loadGenreAnime(genre) {
   featuredGrid.innerHTML = '';
   continueGrid.innerHTML = '';
   try {
-    // Jikan genre IDs: https://docs.api.jikan.moe/#tag/genres/operation/getAnimeGenres
     const genreMap = {
       'action': 1, 'adventure': 2, 'comedy': 4, 'drama': 8, 'fantasy': 10, 'romance': 22, 'sci-fi': 24, 'sports': 30, 'slice of life': 36, 'horror': 14
     };
@@ -299,7 +277,6 @@ genreLinks.forEach(link => {
 });
 
 
-// --- Card click: open modal player ---
 document.addEventListener('click', function(e) {
   const card = e.target.closest('.anime-card');
   if (card && card.dataset.animeTitle) {
@@ -329,7 +306,6 @@ async function loadSeasonalAnime() {
   if (!seasonalGrid) return;
   seasonalGrid.innerHTML = '<div>Loading...</div>';
   try {
-    // Popular this season: sort by popularity
     const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/seasons/now?sort=popularity&limit=16');
     const data = await res.json();
     seasonalGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
@@ -343,7 +319,6 @@ async function loadTopAiringAnime() {
   if (!topAiringGrid) return;
   topAiringGrid.innerHTML = '<div>Loading...</div>';
   try {
-    // Top Airing: filter=airing, sort by popularity
     const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/top/anime?filter=airing&limit=16');
     const data = await res.json();
     topAiringGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
@@ -370,7 +345,6 @@ async function loadTopOngoingAnime() {
   if (!topOngoingGrid) return;
   topOngoingGrid.innerHTML = '<div>Loading...</div>';
   try {
-    // Ongoing: status=airing, sort by popularity
     const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/anime?status=airing&order_by=popularity&limit=16');
     const data = await res.json();
     topOngoingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
