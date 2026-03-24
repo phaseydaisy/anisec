@@ -135,41 +135,41 @@ async function playEpisode(idx) {
 // --- API Integrations ---
 async function fetchGogoanimeEpisodes(title) {
   // Search for anime
-  const res = await fetch(`https://api.consumet.org/anime/gogoanime/${encodeURIComponent(title)}`);
+  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/gogoanime/${encodeURIComponent(title)}`);
   const data = await res.json();
   if (!data || !data.episodes) return { episodes: [] };
   return { episodes: data.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
 }
 async function fetchGogoanimeStream(epId) {
-  const res = await fetch(`https://api.consumet.org/anime/gogoanime/watch/${encodeURIComponent(epId)}`);
+  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/gogoanime/watch/${encodeURIComponent(epId)}`);
   const data = await res.json();
   // Prefer best quality, fallback to first
   return data.sources?.[0]?.url || '';
 }
 async function fetchZoroEpisodes(title) {
-  const res = await fetch(`https://api.consumet.org/anime/zoro/${encodeURIComponent(title)}`);
+  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/zoro/${encodeURIComponent(title)}`);
   const data = await res.json();
   if (!data || !data.episodes) return { episodes: [] };
   return { episodes: data.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
 }
 async function fetchZoroStream(epId) {
-  const res = await fetch(`https://api.consumet.org/anime/zoro/watch?episodeId=${encodeURIComponent(epId)}`);
+  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/zoro/watch?episodeId=${encodeURIComponent(epId)}`);
   const data = await res.json();
   return data.sources?.[0]?.url || '';
 }
 async function fetchEnimeEpisodes(title) {
   // Enime API: search by title, then get episodes
-  const res = await fetch(`https://api.enime.moe/search/${encodeURIComponent(title)}`);
+  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/search/${encodeURIComponent(title)}`);
   const data = await res.json();
   if (!data || !data.anime?.length) return { episodes: [] };
   const animeId = data.anime[0].id;
-  const epRes = await fetch(`https://api.enime.moe/anime/${animeId}`);
+  const epRes = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/anime/${animeId}`);
   const epData = await epRes.json();
   if (!epData || !epData.episodes) return { episodes: [] };
   return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
 }
 async function fetchEnimeStream(epId) {
-  const res = await fetch(`https://api.enime.moe/episode/${encodeURIComponent(epId)}`);
+  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/episode/${encodeURIComponent(epId)}`);
   const data = await res.json();
   return data?.sources?.[0]?.url || '';
 }
@@ -179,7 +179,7 @@ async function loadTrendingAnime() {
   trendingGrid.innerHTML = '<div>Loading trending anime...</div>';
   try {
     // Use Jikan's bypopularity for trending
-    const res = await fetch('https://api.jikan.moe/v4/top/anime?filter=bypopularity&limit=16');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/top/anime?filter=bypopularity&limit=16');
     const data = await res.json();
     trendingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
@@ -207,7 +207,7 @@ async function loadRecentAnime() {
   recentGrid.innerHTML = '<div>Loading recently added anime...</div>';
   try {
     // Use current season, sort by start_date for recency
-    const res = await fetch('https://api.jikan.moe/v4/seasons/now?sort=start_date&order=desc&limit=16');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/seasons/now?sort=start_date&order=desc&limit=16');
     const data = await res.json();
     recentGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
@@ -218,7 +218,7 @@ async function loadRecentAnime() {
 async function loadFeaturedAnime() {
   featuredGrid.innerHTML = '<div>Loading featured anime...</div>';
   try {
-    const res = await fetch('https://api.jikan.moe/v4/top/anime?limit=3');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/top/anime?limit=3');
     const data = await res.json();
     featuredGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
@@ -241,7 +241,7 @@ async function loadGenreAnime(genre) {
       trendingGrid.innerHTML = '<div>Genre not found.</div>';
       return;
     }
-    const res = await fetch(`https://api.jikan.moe/v4/anime?genres=${genreId}&order_by=popularity&limit=8`);
+    const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/anime?genres=${genreId}&order_by=popularity&limit=8`);
     const data = await res.json();
     trendingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
   } catch (e) {
@@ -261,7 +261,7 @@ async function searchAnime() {
   featuredGrid.innerHTML = '';
   continueGrid.innerHTML = '';
   try {
-    const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=15`);
+    const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=15`);
     const data = await res.json();
     if (data.data.length === 0) {
       trendingGrid.innerHTML = '<div>No results found.</div>';
@@ -330,7 +330,7 @@ async function loadSeasonalAnime() {
   seasonalGrid.innerHTML = '<div>Loading...</div>';
   try {
     // Popular this season: sort by popularity
-    const res = await fetch('https://api.jikan.moe/v4/seasons/now?sort=popularity&limit=16');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/seasons/now?sort=popularity&limit=16');
     const data = await res.json();
     seasonalGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
     addHorizontalScroll(seasonalGrid);
@@ -344,7 +344,7 @@ async function loadTopAiringAnime() {
   topAiringGrid.innerHTML = '<div>Loading...</div>';
   try {
     // Top Airing: filter=airing, sort by popularity
-    const res = await fetch('https://api.jikan.moe/v4/top/anime?filter=airing&limit=16');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/top/anime?filter=airing&limit=16');
     const data = await res.json();
     topAiringGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
     addHorizontalScroll(topAiringGrid);
@@ -357,7 +357,7 @@ async function loadTopMoviesAnime() {
   if (!topMoviesGrid) return;
   topMoviesGrid.innerHTML = '<div>Loading...</div>';
   try {
-    const res = await fetch('https://api.jikan.moe/v4/top/anime?type=movie&limit=12');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/top/anime?type=movie&limit=12');
     const data = await res.json();
     topMoviesGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
     addHorizontalScroll(topMoviesGrid);
@@ -371,7 +371,7 @@ async function loadTopOngoingAnime() {
   topOngoingGrid.innerHTML = '<div>Loading...</div>';
   try {
     // Ongoing: status=airing, sort by popularity
-    const res = await fetch('https://api.jikan.moe/v4/anime?status=airing&order_by=popularity&limit=16');
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/anime?status=airing&order_by=popularity&limit=16');
     const data = await res.json();
     topOngoingGrid.innerHTML = data.data.map(anime => getAnimeCard(anime)).join('');
     addHorizontalScroll(topOngoingGrid);
