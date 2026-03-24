@@ -117,8 +117,10 @@
       <span>&copy; 2026 Anisec. All rights reserved.</span>
     </div>
   </footer>
-<script>
-// --- DevTools Detection and Blocker ---
+<!--
+<script disabled>
+// --- Hardened DevTools & Source Blocker (DISABLED) ---
+/*
 (function() {
   let devtoolsOpen = false;
   let blockOverlay = null;
@@ -131,23 +133,28 @@
       blockOverlay.style.width = '100vw';
       blockOverlay.style.height = '100vh';
       blockOverlay.style.background = '#fff';
-      blockOverlay.style.zIndex = 999999;
+      blockOverlay.style.zIndex = 2147483647;
       blockOverlay.style.display = 'flex';
       blockOverlay.style.flexDirection = 'column';
       blockOverlay.style.justifyContent = 'center';
       blockOverlay.style.alignItems = 'center';
+      blockOverlay.style.userSelect = 'none';
+      blockOverlay.style.pointerEvents = 'all';
       blockOverlay.innerHTML = `
         <h1 style="color:#222;font-size:2.5rem;margin-bottom:1rem;">Error 1015</h1>
         <h2 style="color:#888;font-size:1.5rem;margin-bottom:2rem;">You are being rate limited</h2>
         <div style="max-width:500px;text-align:center;color:#444;">
-          <p>The owner of this website has temporarily blocked access because browser developer tools were detected.<br><br>
-          Please close DevTools to continue using the site.</p>
+          <p>The owner of this website has temporarily blocked access because browser developer tools or source viewing was detected.<br><br>
+          Please close DevTools and do not attempt to view source to continue using the site.</p>
         </div>
       `;
       document.body.appendChild(blockOverlay);
     }
     blockOverlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    // Prevent tab navigation
+    blockOverlay.tabIndex = 0;
+    blockOverlay.focus();
   }
   function hideBlock() {
     if (blockOverlay) blockOverlay.style.display = 'none';
@@ -181,12 +188,15 @@
     }
   }
   setInterval(checkDevTools, 500);
-  // Also block on F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+  // Block all source viewing shortcuts and right-click
   window.addEventListener('keydown', function(e) {
     if (
       e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
-      (e.ctrlKey && e.key === 'U')
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+      (e.ctrlKey && e.key === 'U') ||
+      (e.metaKey && e.altKey && e.key.toLowerCase() === 'u') ||
+      (e.ctrlKey && e.key === 'S') ||
+      (e.metaKey && e.key.toLowerCase() === 's')
     ) {
       showBlock();
       e.preventDefault();
@@ -194,16 +204,62 @@
       return false;
     }
   }, true);
-  // Try to block right-click > Inspect
+  // Block right-click and text selection
   window.addEventListener('contextmenu', function(e) {
-    if (devtoolsOpen) {
+    showBlock();
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }, true);
+  window.addEventListener('selectstart', function(e) {
+    showBlock();
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }, true);
+  // Block drag events
+  window.addEventListener('dragstart', function(e) {
+    showBlock();
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }, true);
+  // Block copy/cut
+  window.addEventListener('copy', function(e) {
+    showBlock();
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }, true);
+  window.addEventListener('cut', function(e) {
+    showBlock();
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }, true);
+  // Block print screen
+  window.addEventListener('keyup', function(e) {
+    if (e.key === 'PrintScreen') {
       showBlock();
       e.preventDefault();
       e.stopPropagation();
       return false;
     }
   }, true);
-})();
+  // Block page source via menu (best effort)
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      showBlock();
+    }
+  });
+  // Always keep overlay on top
+  setInterval(function() {
+    if (blockOverlay && blockOverlay.style.display === 'flex') {
+      document.body.appendChild(blockOverlay);
+    }
+  }, 1000);
 </script>
+-->
+*/
 </body>
 </html>
