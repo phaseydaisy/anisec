@@ -252,8 +252,9 @@ async function searchAnime() {
 }
 
 
-searchButton.addEventListener('click', searchAnime);
-searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchAnime(); });
+
+if (searchButton) searchButton.addEventListener('click', searchAnime);
+if (searchInput) searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchAnime(); });
 
 genreLinks.forEach(link => {
   link.addEventListener('click', e => {
