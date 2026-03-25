@@ -16,7 +16,7 @@ const homeBtn = document.querySelector('a[href="#home"]');
 
 function getAnimeCard(anime) {
   return `<div class="anime-card" data-anime-title="${encodeURIComponent(anime.title)}" data-anime-id="${anime.mal_id}" data-anime-image="${anime.images.jpg.image_url}">
-    <img src="${anime.images.jpg.image_url}" alt="${anime.title}" style="inline-size:100%;block-size:300px;object-fit:cover;border-radius:8px 8px 0 0;">
+    <img src="${anime.images.jpg.image_url}" alt="${anime.title}" style="width:100%;height:300px;object-fit:cover;border-radius:8px 8px 0 0;">
     <div class="anime-title">${anime.title}</div>
   </div>`;
 }
@@ -60,25 +60,19 @@ async function fetchEpisodesWithFallback(title) {
   let result = null;
   let provider = null;
   try {
-    result = await fetchGogoanimeEpisodes(title);
-    provider = 'gogoanime';
-    if (!result || !result.episodes?.length) throw new Error('No Gogoanime');
+    result = await fetchVideasyEpisodes(title);
+    provider = 'videasy';
+    if (!result || !result.episodes?.length) throw new Error('No Videasy');
   } catch {
     try {
-      result = await fetchZoroEpisodes(title);
-      provider = 'zoro';
-      if (!result || !result.episodes?.length) throw new Error('No Zoro');
+      result = await fetchVidsrcEpisodes(title);
+      provider = 'vidsrc';
+      if (!result || !result.episodes?.length) throw new Error('No Vidsrc');
     } catch {
-      try {
-        result = await fetchEnimeEpisodes(title);
-        provider = 'enime';
-        if (!result || !result.episodes?.length) throw new Error('No Enime');
-      } catch {
-        playerEpisodeSelect.innerHTML = '<option>No episodes found</option>';
-        playerError.textContent = 'No streaming sources found for this anime.';
-        playerError.style.display = 'block';
-        return;
-      }
+      playerEpisodeSelect.innerHTML = '<option>No episodes found</option>';
+      playerError.textContent = 'No streaming sources found for this anime.';
+      playerError.style.display = 'block';
+      return;
     }
   }
   currentEpisodes = result.episodes;
@@ -102,12 +96,10 @@ async function playEpisode(idx) {
   playerVideo.load();
   let streamUrl = '';
   try {
-    if (currentProvider === 'gogoanime') {
-      streamUrl = await fetchGogoanimeStream(ep.id);
-    } else if (currentProvider === 'zoro') {
-      streamUrl = await fetchZoroStream(ep.id);
-    } else if (currentProvider === 'enime') {
-      streamUrl = await fetchEnimeStream(ep.id);
+    if (currentProvider === 'videasy') {
+      streamUrl = await fetchVideasyStream(ep.id);
+    } else if (currentProvider === 'vidsrc') {
+      streamUrl = await fetchVidsrcStream(ep.id);
     }
     if (!streamUrl) throw new Error('No stream');
     playerSource.src = streamUrl;
@@ -120,42 +112,37 @@ async function playEpisode(idx) {
   }
 }
 
-async function fetchGogoanimeEpisodes(title) {
-  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/gogoanime/${encodeURIComponent(title)}`);
+
+async function fetchVideasyEpisodes(title) {
+    const res = await fetch(`https://api.videasy.pro/anime/search?query=${encodeURIComponent(title)}`);
   const data = await res.json();
-  if (!data || !data.episodes) return { episodes: [] };
-  return { episodes: data.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
-}
-async function fetchGogoanimeStream(epId) {
-  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/gogoanime/watch/${encodeURIComponent(epId)}`);
-  const data = await res.json();
-  return data.sources?.[0]?.url || '';
-}
-async function fetchZoroEpisodes(title) {
-  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/zoro/${encodeURIComponent(title)}`);
-  const data = await res.json();
-  if (!data || !data.episodes) return { episodes: [] };
-  return { episodes: data.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
-}
-async function fetchZoroStream(epId) {
-  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.consumet.org/anime/zoro/watch?episodeId=${encodeURIComponent(epId)}`);
-  const data = await res.json();
-  return data.sources?.[0]?.url || '';
-}
-async function fetchEnimeEpisodes(title) {
-  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/search/${encodeURIComponent(title)}`);
-  const data = await res.json();
-  if (!data || !data.anime?.length) return { episodes: [] };
-  const animeId = data.anime[0].id;
-  const epRes = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/anime/${animeId}`);
+  if (!data || !data.results?.length) return { episodes: [] };
+  // Assume first result is the anime, and it has an id
+  const animeId = data.results[0].id;
+  const epRes = await fetch(`https://api.videasy.pro/anime/${animeId}/episodes`);
   const epData = await epRes.json();
   if (!epData || !epData.episodes) return { episodes: [] };
   return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
 }
-async function fetchEnimeStream(epId) {
-  const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.enime.moe/episode/${encodeURIComponent(epId)}`);
+async function fetchVideasyStream(epId) {
+    const res = await fetch(`https://api.videasy.pro/episode/${encodeURIComponent(epId)}/stream`);
   const data = await res.json();
-  return data?.sources?.[0]?.url || '';
+  return data?.streamUrl || '';
+}
+async function fetchVidsrcEpisodes(title) {
+    const res = await fetch(`https://vidsrc-api.pro/anime/search?query=${encodeURIComponent(title)}`);
+  const data = await res.json();
+  if (!data || !data.results?.length) return { episodes: [] };
+  const animeId = data.results[0].id;
+  const epRes = await fetch(`https://vidsrc-api.pro/anime/${animeId}/episodes`);
+  const epData = await epRes.json();
+  if (!epData || !epData.episodes) return { episodes: [] };
+  return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
+}
+async function fetchVidsrcStream(epId) {
+    const res = await fetch(`https://vidsrc-api.pro/episode/${encodeURIComponent(epId)}/stream`);
+  const data = await res.json();
+  return data?.streamUrl || '';
 }
 
 

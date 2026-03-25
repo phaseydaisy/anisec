@@ -3,78 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to Anisec</title>
+  <title>Welcome to AnimePortal</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      min-block-size: 100vh;
-      background: linear-gradient(120deg, #23263a 60%, #ff5e62 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      color: #fff;
-    }
-    .startup-container {
-      background: rgba(35,38,58,0.85);
-      border-radius: 18px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-      padding: 3rem 2.5rem 2.5rem 2.5rem;
-      text-align: center;
-      max-inline-size: 400px;
-      inline-size: 100%;
-      backdrop-filter: blur(8px);
-      animation: fadeIn 1s;
-    }
-    .startup-logo {
-      font-size: 2.5rem;
-      font-weight: bold;
-      color: #ff5e62;
-      margin-block-end: 1.2rem;
-      letter-spacing: 2px;
-      text-shadow: 0 2px 8px rgba(255,94,98,0.08);
-    }
-    .startup-title {
-      font-size: 1.7rem;
-      font-weight: 600;
-      margin-block-end: 0.7rem;
-    }
-    .startup-desc {
-      font-size: 1.1rem;
-      margin-block-end: 2.2rem;
-      color: #f3f3f3;
-    }
-    .startup-btn {
-      background: linear-gradient(90deg, #ff5e62 60%, #ff9966 100%);
-      color: #fff;
-      border: none;
-      padding: 0.9rem 2.4rem;
-      border-radius: 8px;
-      font-size: 1.15rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-      box-shadow: 0 2px 8px rgba(255,94,98,0.09);
-    }
-    .startup-btn:hover {
-      background: linear-gradient(90deg, #ff3b3f 60%, #ff9966 100%);
-      box-shadow: 0 4px 16px rgba(255,94,98,0.18);
-      transform: translateY(-2px) scale(1.04);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  <script defer src="devtools-block.js"></script>
 </head>
-<body>
-  <div class="startup-container">
-    <div class="startup-logo">anisec</div>
-    <div class="startup-title">Welcome to Anisec</div>
-    <div class="startup-desc">Your gateway to streaming anime in HD, free and always updated.<br>Click below to start browsing!</div>
-    <button class="startup-btn" onclick="window.location.href='index.html'">Browse Anime</button>
+<body style="display:flex;align-items:center;justify-content:center;min-block-size:100vh;background:linear-gradient(120deg,#181a20 60%,#ff5e62 100%);">
+  <div class="startup-container" style="background:rgba(35,38,58,0.85);border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);padding:3rem 2.5rem 2.5rem 2.5rem;text-align:center;max-inline-size:400px;inline-size:100%;backdrop-filter:blur(8px);animation:fadeIn 1s;">
+    <div class="startup-logo" style="font-size:2.5rem;font-weight:bold;color:#ff5e62;margin-block-end:1.2rem;letter-spacing:2px;text-shadow:0 2px 8px rgba(255,94,98,0.08);">AnimePortal</div>
+    <div class="startup-title" style="font-size:1.7rem;font-weight:600;margin-block-end:0.7rem;">Welcome to AnimePortal</div>
+    <div class="startup-desc" style="font-size:1.1rem;margin-block-end:2.2rem;color:#f3f3f3;">Your gateway to streaming anime in HD, free and always updated.<br>Click below to start browsing!</div>
+    <button class="cta" onclick="window.location.href='index.html'" style="font-size:1.15rem;">Browse Anime</button>
   </div>
 </body>
 </html>
