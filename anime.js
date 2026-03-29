@@ -35,41 +35,61 @@ let currentProvider = null;
 async function openPlayerModal(anime) {
   playerModalTitle.textContent = anime.title;
   const modalBody = playerModal.querySelector('.player-modal-body');
-  // Fetch episode count from Jikan (if available)
-  let episodeCount = 0;
-  try {
-    const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/anime/${anime.id}`);
-    const data = await res.json();
-    episodeCount = data.data.episodes || 0;
-  } catch {}
-  // UI: Episode selector if more than 1 episode
   modalBody.innerHTML = '';
-  let episodeSelect = null;
-  if (episodeCount > 1) {
-    episodeSelect = document.createElement('select');
-    episodeSelect.className = 'player-episode-select';
-    for (let i = 1; i <= episodeCount; i++) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `Episode ${i}`;
-      episodeSelect.appendChild(opt);
-    }
-    episodeSelect.style.marginBottom = '1rem';
-    modalBody.appendChild(episodeSelect);
+  // 1. Fetch AniList ID using AniList API
+  let anilistId = null;
+  try {
+    const query = `query ($id: Int) { Media(idMal: $id) { id type episodes format } }`;
+    const variables = { id: parseInt(anime.id) };
+    const res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables })
+    });
+    const data = await res.json();
+    anilistId = data.data.Media.id;
+    var episodeCount = data.data.Media.episodes || 0;
+    var isMovie = data.data.Media.format === 'MOVIE';
+  } catch {
+    modalBody.innerHTML = '<div style="color:#ff5e62">Failed to fetch AniList ID.</div>';
+    return;
   }
-  // Create iframe
+  // 2. Build iframe URL with all features
+  let iframeUrl = '';
+  let episodeSelect = null;
+  const playerFeatures = 'nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&overlay=true&color=8B5CF6';
+  if (isMovie) {
+    iframeUrl = `https://player.videasy.net/anime/${anilistId}?${playerFeatures}`;
+  } else {
+    let episode = 1;
+    if (episodeCount > 1) {
+      episodeSelect = document.createElement('select');
+      episodeSelect.className = 'player-episode-select';
+      for (let i = 1; i <= episodeCount; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Episode ${i}`;
+        episodeSelect.appendChild(opt);
+      }
+      episodeSelect.style.marginBottom = '1rem';
+      modalBody.appendChild(episodeSelect);
+      episode = episodeSelect.value;
+    }
+    iframeUrl = `https://player.videasy.net/anime/${anilistId}/${episode}?${playerFeatures}`;
+  }
+  // 3. Create and insert iframe
   const iframe = document.createElement('iframe');
   iframe.className = 'player-embed';
-  iframe.src = `https://player.videasy.net/?q=${encodeURIComponent(anime.title)}`;
+  iframe.src = iframeUrl;
   iframe.width = '100%';
   iframe.height = '480';
   iframe.allowFullscreen = true;
   iframe.style.border = 'none';
   modalBody.appendChild(iframe);
-  // Episode change handler
+  // 4. Episode change handler
   if (episodeSelect) {
     episodeSelect.addEventListener('change', () => {
-      iframe.src = `https://player.videasy.net/?q=${encodeURIComponent(anime.title)}&ep=${episodeSelect.value}`;
+      iframe.src = `https://player.videasy.net/anime/${anilistId}/${episodeSelect.value}?${playerFeatures}`;
     });
   }
   playerModal.style.display = 'flex';
