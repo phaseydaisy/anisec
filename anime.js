@@ -35,14 +35,23 @@ let currentProvider = null;
 function openPlayerModal(anime) {
   playerModalTitle.textContent = anime.title;
   playerError.style.display = 'none';
-  playerEpisodeSelect.innerHTML = '<option>Loading...</option>';
+  playerEpisodeSelect.style.display = 'none';
   playerVideo.style.display = 'none';
-  playerVideo.pause();
-  playerSource.src = '';
-  playerVideo.load();
+  // Remove any previous iframe
+  const oldIframe = playerModal.querySelector('iframe.player-embed');
+  if (oldIframe) oldIframe.remove();
+  // Create new iframe
+  const iframe = document.createElement('iframe');
+  iframe.className = 'player-embed';
+  iframe.src = `https://player.videasy.net/?q=${encodeURIComponent(anime.title)}`;
+  iframe.width = '100%';
+  iframe.height = '480';
+  iframe.allowFullscreen = true;
+  iframe.style.border = 'none';
+  // Insert iframe before error message
+  playerError.parentNode.insertBefore(iframe, playerError);
   playerModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  fetchEpisodesWithFallback(anime.title)
 }
 
 function closePlayerModal() {
@@ -55,98 +64,6 @@ function closePlayerModal() {
 
 if (playerModalClose) playerModalClose.onclick = closePlayerModal;
 if (playerModal) playerModal.onclick = e => { if (e.target === playerModal) closePlayerModal(); };
-
-async function fetchEpisodesWithFallback(title) {
-  let result = null;
-  let provider = null;
-  try {
-    result = await fetchVideasyEpisodes(title);
-    provider = 'videasy';
-    if (!result || !result.episodes?.length) throw new Error('No Videasy');
-  } catch {
-    try {
-      result = await fetchVidsrcEpisodes(title);
-      provider = 'vidsrc';
-      if (!result || !result.episodes?.length) throw new Error('No Vidsrc');
-    } catch {
-      playerEpisodeSelect.innerHTML = '<option>No episodes found</option>';
-      playerError.textContent = 'No streaming sources found for this anime.';
-      playerError.style.display = 'block';
-      return;
-    }
-  }
-  currentEpisodes = result.episodes;
-  currentProvider = provider;
-  playerEpisodeSelect.innerHTML = '';
-  for (let i = 0; i < currentEpisodes.length; i++) {
-    const ep = currentEpisodes[i];
-    playerEpisodeSelect.innerHTML += `<option value="${i}">Episode ${ep.number || i+1}</option>`;
-  }
-  playerEpisodeSelect.onchange = () => playEpisode(playerEpisodeSelect.value);
-  playEpisode(0);
-}
-
-async function playEpisode(idx) {
-  idx = parseInt(idx);
-  const ep = currentEpisodes[idx];
-  playerError.style.display = 'none';
-  playerVideo.style.display = 'none';
-  playerVideo.pause();
-  playerSource.src = '';
-  playerVideo.load();
-  let streamUrl = '';
-  try {
-    if (currentProvider === 'videasy') {
-      streamUrl = await fetchVideasyStream(ep.id);
-    } else if (currentProvider === 'vidsrc') {
-      streamUrl = await fetchVidsrcStream(ep.id);
-    }
-    if (!streamUrl) throw new Error('No stream');
-    playerSource.src = streamUrl;
-    playerVideo.load();
-    playerVideo.style.display = 'block';
-    playerVideo.play();
-  } catch {
-    playerError.textContent = 'Failed to load stream for this episode.';
-    playerError.style.display = 'block';
-  }
-}
-
-
-
-// The Videasy and Vidsrc APIs are no longer available. The following functions are disabled to prevent errors.
-// async function fetchVideasyEpisodes(title) {
-//     const res = await fetch(`https://api.videasy.pro/anime/search?query=${encodeURIComponent(title)}`);
-//   const data = await res.json();
-//   if (!data || !data.results?.length) return { episodes: [] };
-//   // Assume first result is the anime, and it has an id
-//   const animeId = data.results[0].id;
-//   const epRes = await fetch(`https://api.videasy.pro/anime/${animeId}/episodes`);
-//   const epData = await epRes.json();
-//   if (!epData || !epData.episodes) return { episodes: [] };
-//   return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
-// }
-// async function fetchVideasyStream(epId) {
-//     const res = await fetch(`https://api.videasy.pro/episode/${encodeURIComponent(epId)}/stream`);
-//   const data = await res.json();
-//   return data?.streamUrl || '';
-// }
-// async function fetchVidsrcEpisodes(title) {
-//     const res = await fetch(`https://vidsrc-api.pro/anime/search?query=${encodeURIComponent(title)}`);
-//   const data = await res.json();
-//   if (!data || !data.results?.length) return { episodes: [] };
-//   const animeId = data.results[0].id;
-//   const epRes = await fetch(`https://vidsrc-api.pro/anime/${animeId}/episodes`);
-//   const epData = await epRes.json();
-//   if (!epData || !epData.episodes) return { episodes: [] };
-//   return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
-// }
-// async function fetchVidsrcStream(epId) {
-//     const res = await fetch(`https://vidsrc-api.pro/episode/${encodeURIComponent(epId)}/stream`);
-//   const data = await res.json();
-//   return data?.streamUrl || '';
-// }
-
 
 async function loadTrendingAnime() {
   trendingGrid.innerHTML = '<div>Loading trending anime...</div>';

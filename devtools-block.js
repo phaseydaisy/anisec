@@ -1,5 +1,3 @@
-// DevTools blocking logic
-// This disables right-click, F12, Ctrl+Shift+I/J/C/U, and blocks opening devtools panels
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', function(e) {
 	if (
