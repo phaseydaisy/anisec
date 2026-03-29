@@ -34,13 +34,9 @@ let currentProvider = null;
 
 function openPlayerModal(anime) {
   playerModalTitle.textContent = anime.title;
-  playerError.style.display = 'none';
-  playerEpisodeSelect.style.display = 'none';
-  playerVideo.style.display = 'none';
-  // Remove any previous iframe
-  const oldIframe = playerModal.querySelector('iframe.player-embed');
-  if (oldIframe) oldIframe.remove();
-  // Create new iframe
+  // Clear modal body and insert only the iframe
+  const modalBody = playerModal.querySelector('.player-modal-body');
+  modalBody.innerHTML = '';
   const iframe = document.createElement('iframe');
   iframe.className = 'player-embed';
   iframe.src = `https://player.videasy.net/?q=${encodeURIComponent(anime.title)}`;
@@ -48,8 +44,7 @@ function openPlayerModal(anime) {
   iframe.height = '480';
   iframe.allowFullscreen = true;
   iframe.style.border = 'none';
-  // Insert iframe before error message
-  playerError.parentNode.insertBefore(iframe, playerError);
+  modalBody.appendChild(iframe);
   playerModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
