@@ -113,37 +113,39 @@ async function playEpisode(idx) {
 }
 
 
-async function fetchVideasyEpisodes(title) {
-    const res = await fetch(`https://api.videasy.pro/anime/search?query=${encodeURIComponent(title)}`);
-  const data = await res.json();
-  if (!data || !data.results?.length) return { episodes: [] };
-  // Assume first result is the anime, and it has an id
-  const animeId = data.results[0].id;
-  const epRes = await fetch(`https://api.videasy.pro/anime/${animeId}/episodes`);
-  const epData = await epRes.json();
-  if (!epData || !epData.episodes) return { episodes: [] };
-  return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
-}
-async function fetchVideasyStream(epId) {
-    const res = await fetch(`https://api.videasy.pro/episode/${encodeURIComponent(epId)}/stream`);
-  const data = await res.json();
-  return data?.streamUrl || '';
-}
-async function fetchVidsrcEpisodes(title) {
-    const res = await fetch(`https://vidsrc-api.pro/anime/search?query=${encodeURIComponent(title)}`);
-  const data = await res.json();
-  if (!data || !data.results?.length) return { episodes: [] };
-  const animeId = data.results[0].id;
-  const epRes = await fetch(`https://vidsrc-api.pro/anime/${animeId}/episodes`);
-  const epData = await epRes.json();
-  if (!epData || !epData.episodes) return { episodes: [] };
-  return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
-}
-async function fetchVidsrcStream(epId) {
-    const res = await fetch(`https://vidsrc-api.pro/episode/${encodeURIComponent(epId)}/stream`);
-  const data = await res.json();
-  return data?.streamUrl || '';
-}
+
+// The Videasy and Vidsrc APIs are no longer available. The following functions are disabled to prevent errors.
+// async function fetchVideasyEpisodes(title) {
+//     const res = await fetch(`https://api.videasy.pro/anime/search?query=${encodeURIComponent(title)}`);
+//   const data = await res.json();
+//   if (!data || !data.results?.length) return { episodes: [] };
+//   // Assume first result is the anime, and it has an id
+//   const animeId = data.results[0].id;
+//   const epRes = await fetch(`https://api.videasy.pro/anime/${animeId}/episodes`);
+//   const epData = await epRes.json();
+//   if (!epData || !epData.episodes) return { episodes: [] };
+//   return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
+// }
+// async function fetchVideasyStream(epId) {
+//     const res = await fetch(`https://api.videasy.pro/episode/${encodeURIComponent(epId)}/stream`);
+//   const data = await res.json();
+//   return data?.streamUrl || '';
+// }
+// async function fetchVidsrcEpisodes(title) {
+//     const res = await fetch(`https://vidsrc-api.pro/anime/search?query=${encodeURIComponent(title)}`);
+//   const data = await res.json();
+//   if (!data || !data.results?.length) return { episodes: [] };
+//   const animeId = data.results[0].id;
+//   const epRes = await fetch(`https://vidsrc-api.pro/anime/${animeId}/episodes`);
+//   const epData = await epRes.json();
+//   if (!epData || !epData.episodes) return { episodes: [] };
+//   return { episodes: epData.episodes.map(ep => ({ id: ep.id, number: ep.number })) };
+// }
+// async function fetchVidsrcStream(epId) {
+//     const res = await fetch(`https://vidsrc-api.pro/episode/${encodeURIComponent(epId)}/stream`);
+//   const data = await res.json();
+//   return data?.streamUrl || '';
+// }
 
 
 async function loadTrendingAnime() {
@@ -215,7 +217,11 @@ async function loadGenreAnime(genre) {
 }
 
 function loadContinueWatching() {
-  continueGrid.innerHTML = '<div>Sign in to track your anime and continue watching!</div>';
+  if (continueGrid) {
+    continueGrid.innerHTML = '<div>Sign in to track your anime and continue watching!</div>';
+  } else {
+    console.warn('Element with class .continue-grid not found in the DOM.');
+  }
 }
 
 async function searchAnime() {
