@@ -32,11 +32,32 @@ let currentAnime = null;
 let currentEpisodes = [];
 let currentProvider = null;
 
-function openPlayerModal(anime) {
+async function openPlayerModal(anime) {
   playerModalTitle.textContent = anime.title;
-  // Clear modal body and insert only the iframe
   const modalBody = playerModal.querySelector('.player-modal-body');
+  // Fetch episode count from Jikan (if available)
+  let episodeCount = 0;
+  try {
+    const res = await fetch(`https://anime-proxy.kaidenlorse1.workers.dev/proxy/api.jikan.moe/v4/anime/${anime.id}`);
+    const data = await res.json();
+    episodeCount = data.data.episodes || 0;
+  } catch {}
+  // UI: Episode selector if more than 1 episode
   modalBody.innerHTML = '';
+  let episodeSelect = null;
+  if (episodeCount > 1) {
+    episodeSelect = document.createElement('select');
+    episodeSelect.className = 'player-episode-select';
+    for (let i = 1; i <= episodeCount; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `Episode ${i}`;
+      episodeSelect.appendChild(opt);
+    }
+    episodeSelect.style.marginBottom = '1rem';
+    modalBody.appendChild(episodeSelect);
+  }
+  // Create iframe
   const iframe = document.createElement('iframe');
   iframe.className = 'player-embed';
   iframe.src = `https://player.videasy.net/?q=${encodeURIComponent(anime.title)}`;
@@ -45,6 +66,12 @@ function openPlayerModal(anime) {
   iframe.allowFullscreen = true;
   iframe.style.border = 'none';
   modalBody.appendChild(iframe);
+  // Episode change handler
+  if (episodeSelect) {
+    episodeSelect.addEventListener('change', () => {
+      iframe.src = `https://player.videasy.net/?q=${encodeURIComponent(anime.title)}&ep=${episodeSelect.value}`;
+    });
+  }
   playerModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
