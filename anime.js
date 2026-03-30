@@ -41,7 +41,7 @@ async function openPlayerModal(anime) {
   try {
     const query = `query ($id: Int) { Media(idMal: $id) { id type episodes format } }`;
     const variables = { id: parseInt(anime.id) };
-    const res = await fetch('https://graphql.anilist.co', {
+    const res = await fetch('https://anime-proxy.kaidenlorse1.workers.dev/proxy/graphql.anilist.co', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables })
