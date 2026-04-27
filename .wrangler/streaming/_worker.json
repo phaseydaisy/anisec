@@ -1,0 +1,8 @@
+{
+  "name": "phawse-streaming",
+  "compatibility_date": "2024-01-01",
+  "pages_build": {
+    "branch": "main",
+    "cwd": "."
+  }
+}

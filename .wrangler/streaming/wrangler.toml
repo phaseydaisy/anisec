@@ -1,0 +1,10 @@
+# Cloudflare Pages Configuration
+name = "phawse-streaming"
+compatibility_date = "2024-01-01"
+
+[vars]
+NEXT_PUBLIC_APP_URL = "https://streaming.phawse.lol"
+
+# Environment variables for Cloudflare Pages
+# Set these in Cloudflare Dashboard > Pages > Settings > Environment Variables
+# DATABASE_URL, NEXTAUTH_URL, NEXTAUTH_SECRET, ANILIST_CLIENT_ID, ANILIST_CLIENT_SECRET

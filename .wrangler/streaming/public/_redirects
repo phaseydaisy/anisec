@@ -1,0 +1,6 @@
+# Subdomain routing for streaming.phawse.lol
+# This file is for Cloudflare Pages redirect rules
+# The main site is at phawse.lol, streaming is at streaming.phawse.lol
+
+# All paths serve the Next.js app
+# /*  /index.html  200
